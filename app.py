@@ -2,13 +2,13 @@
 import pandas as pd
 import numpy as np
 import io
-# import base64
+import base64
 import streamlit as st
-# import tensorflow as tf
-# from sklearn.preprocessing import StandardScaler, LabelEncoder
-# from sklearn.impute import SimpleImputer
-# from sklearn.model_selection import train_test_split
-# from tensorflow.keras import layers, models
+import tensorflow as tf
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from tensorflow.keras import layers, models
 import matplotlib.pyplot as plt
 
 
@@ -82,60 +82,60 @@ data = pd.read_csv('original_dataset.csv')
 
 
 # Preprocessing and autoencoder model
-# columns_to_drop = ['date', 'timestamp', 'tenant_id', 'org_id', 'edge_id']
-# data = data.drop(columns=columns_to_drop)
+columns_to_drop = ['date', 'timestamp', 'tenant_id', 'org_id', 'edge_id','department_id','unit_id', 'shift_id','machine_id']
+data = data.drop(columns=columns_to_drop)
 
-# imputer = SimpleImputer(strategy='mean')
-# data.fillna(data.mean(), inplace=True)
+imputer = SimpleImputer(strategy='mean')
+data.fillna(data.mean(), inplace=True)
 
 # label_encoder = LabelEncoder()
-# categorical_columns = ['unit_id', 'department_id', 'machine_id', 'shift_id']
+# categorical_columns = ['machine_id']
 # for col in categorical_columns:
 #     data[col] = label_encoder.fit_transform(data[col])
 
-# scaler = StandardScaler()
-# numerical_columns = ['total_machine_runtime', 'machine_up_time', 'planned_production_time', 'machine_idle_time',
-#                      'actual_production_time', 'total_machine_downtime', 'total_planned_downtime', 'unplanned_downtime',
-#                      'total_parts_produced', 'actual_cycletime', 'time_between_job_parts', 'parts_per_minute',
-#                      'availability_loss_time', 'cycletime_loss', 'capacity_utilized_percent', 'machine_performance_percent',
-#                      'machine_availability_percent', 'availability_loss_percent', 'asset_utilization_percent',
-#                      'planned_downtime_percent']
-# data[numerical_columns] = scaler.fit_transform(data[numerical_columns])
+scaler = StandardScaler()
+numerical_columns = ['total_machine_runtime', 'machine_up_time', 'planned_production_time', 'machine_idle_time',
+                     'actual_production_time', 'total_machine_downtime', 'total_planned_downtime', 'unplanned_downtime',
+                     'total_parts_produced', 'actual_cycletime', 'time_between_job_parts', 'parts_per_minute',
+                     'availability_loss_time', 'cycletime_loss', 'capacity_utilized_percent', 'machine_performance_percent',
+                     'machine_availability_percent', 'availability_loss_percent', 'asset_utilization_percent',
+                     'planned_downtime_percent']
+data[numerical_columns] = scaler.fit_transform(data[numerical_columns])
 
-# X = data[numerical_columns]
-# input_dim = X.shape[1]
-# encoding_dim = 10
+X = data[numerical_columns]
+input_dim = X.shape[1]
+encoding_dim = 10
 
-# inputs = tf.keras.Input(shape=(input_dim,))
-# encoded = layers.Dense(encoding_dim, activation='relu')(inputs)
-# decoded = layers.Dense(input_dim, activation='sigmoid')(encoded)
+inputs = tf.keras.Input(shape=(input_dim,))
+encoded = layers.Dense(encoding_dim, activation='relu')(inputs)
+decoded = layers.Dense(input_dim, activation='sigmoid')(encoded)
 
-# autoencoder = models.Model(inputs, decoded)
-# autoencoder.compile(optimizer='adam', loss='mse')
+autoencoder = models.Model(inputs, decoded)
+autoencoder.compile(optimizer='adam', loss='mse')
 
-# X_train, X_test = train_test_split(X, test_size=0.2, random_state=42)
-# X_train_scaled = scaler.fit_transform(X_train)
-# X_test_scaled = scaler.transform(X_test)
+X_train, X_test = train_test_split(X, test_size=0.2, random_state=42)
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
-# # Fit autoencoder model
-# autoencoder.fit(X_train_scaled, X_train_scaled, epochs=25, batch_size=128, shuffle=True, validation_split=0.2)
+# Fit autoencoder model
+autoencoder.fit(X_train_scaled, X_train_scaled, epochs=25, batch_size=128, shuffle=True, validation_split=0.2)
 
-# # Reconstruction errors
-# reconstructions = autoencoder.predict(X_test_scaled)
-# mse = np.mean(np.power(X_test_scaled - reconstructions, 2), axis=1)
-# threshold = np.mean(mse) + 2 * np.std(mse)
-# anomalies = mse > threshold
-# df_test = pd.DataFrame(X_test_scaled, columns=numerical_columns)
-# df_test['anomaly_label'] = anomalies.astype(int)
+# Reconstruction errors
+reconstructions = autoencoder.predict(X_test_scaled)
+mse = np.mean(np.power(X_test_scaled - reconstructions, 2), axis=1)
+threshold = np.mean(mse) + 2 * np.std(mse)
+anomalies = mse > threshold
+df_test = pd.DataFrame(X_test_scaled, columns=numerical_columns)
+df_test['anomaly_label'] = anomalies.astype(int)
 
 
 
-# # Plot reconstruction errors
-# fig1, ax1 = plt.subplots()
-# ax1.plot(df_test.index, mse, color='blue', linestyle='-')
-# ax1.axhline(y=threshold, color='red', linestyle='--', label='Threshold')
-# ax1.set_title('Reconstruction Errors')
-# ax1.set_xlabel('Data Point Index')
-# ax1.set_ylabel('Reconstruction Error')
-# ax1.legend()
-# st.pyplot(fig1)
+# Plot reconstruction errors
+fig1, ax1 = plt.subplots()
+ax1.plot(df_test.index, mse, color='blue', linestyle='-')
+ax1.axhline(y=threshold, color='red', linestyle='--', label='Threshold')
+ax1.set_title('Reconstruction Errors')
+ax1.set_xlabel('Data Point Index')
+ax1.set_ylabel('Reconstruction Error')
+ax1.legend()
+st.pyplot(fig1)
