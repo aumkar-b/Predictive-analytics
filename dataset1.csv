@@ -1,0 +1,3 @@
+machineid,total_machine_runtime,total_machine_downtime,machine_availability_percent,planned_production_time,total_parts_produced,oee,machine_performance_percent,machine_idle_time,actual_production_time,availability_loss_time,capacity_utilized_percent,plant_operating_time_percent
+humac_mac_001,2651000,945000,73.63888889,3600000,517,57.444443,78.00829876,4000,2655000,949000,57.44444444,73.7208
+humac_mac_002,3002000,595000,83.38888889,3600000,594,66,79.14723518,3000,3005000,598000,66,83.458435
